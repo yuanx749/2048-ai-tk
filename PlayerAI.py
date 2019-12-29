@@ -5,9 +5,12 @@ import math
 
 class PlayerAI:
     def __init__(self, time_limit=0.1, order=True):
-        self.time_start = time.time()
         self.time_limit = time_limit
+        self.time_start = time.time()
         self.order = order
+    
+    def set_time_limit(self, time_limit):
+        self.time_limit = time_limit
     
     def timeout(self):
         assert time.time() - self.time_start <= self.time_limit

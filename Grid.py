@@ -3,19 +3,23 @@ import random
 DIRECTIONS = (UP, DOWN, LEFT, RIGHT) = range(4)
 OFFSETS = ((-1, 0), (1, 0), (0, -1), (0, 1))
 
+
 class Grid:
     def __init__(self, height=4, width=4, grid=None):
-        if grid == None:
+        if grid is None:
             self.height = height
             self.width = width
             self.grid = [[0] * self.width for _ in range(self.height)]
         else:
             self.height = len(grid)
             self.width = len(grid[0])
-            self.grid = [[grid[row][col] for col in range(self.width)] for row in range(self.height)]
+            self.grid = [
+                [grid[row][col] for col in range(self.width)]
+                for row in range(self.height)]
 
     def __str__(self):
-        return('\n'.join([''.join(['{:6}'.format(cell) for cell in row]) for row in self.grid]))
+        return('\n'.join(
+            [''.join([f'{cell:6}' for cell in row]) for row in self.grid]))
 
     def to_tuple(self):
         return tuple(tuple(row) for row in self.grid)
@@ -34,7 +38,7 @@ class Grid:
         for row in range(self.height):
             for col in range(self.width):
                 if self.grid[row][col] == 0:
-                    cells.append((row,col))
+                    cells.append((row, col))
         return cells
 
     def get_max_tile(self):
@@ -60,13 +64,21 @@ class Grid:
 
     def move(self, direction):
         if direction == UP:
-            index_lists = [[(row, col) for row in range(self.height)] for col in range(self.width)]
+            index_lists = [
+                [(row, col) for row in range(self.height)]
+                for col in range(self.width)]
         elif direction == DOWN:
-            index_lists = [[(row, col) for row in range(self.height - 1, -1, -1)] for col in range(self.width)]
+            index_lists = [
+                [(row, col) for row in range(self.height - 1, -1, -1)]
+                for col in range(self.width)]
         elif direction == LEFT:
-            index_lists = [[(row, col) for col in range(self.width)] for row in range(self.height)]
+            index_lists = [
+                [(row, col) for col in range(self.width)]
+                for row in range(self.height)]
         elif direction == RIGHT:
-            index_lists = [[(row, col) for col in range(self.width - 1, -1, -1)] for row in range(self.height)]
+            index_lists = [
+                [(row, col) for col in range(self.width - 1, -1, -1)]
+                for row in range(self.height)]
         change = False
         for index_list in index_lists:
             before = [self.grid[row][col] for (row, col) in index_list]
@@ -95,12 +107,13 @@ class Grid:
             for col in range(self.width):
                 if self.grid[row][col] != 0:
                     for d in dirs:
-                        row_adj, col_adj = row + OFFSETS[d][0], col + OFFSETS[d][1]
+                        row_adj = row + OFFSETS[d][0]
+                        col_adj = col + OFFSETS[d][1]
                         if not self.cross_bound(row_adj, col_adj):
                             adj_cell_value = self.grid[row_adj][col_adj]
-                            if adj_cell_value == self.grid[row][col] or adj_cell_value == 0:
+                            if (adj_cell_value == self.grid[row][col]
+                                    or adj_cell_value == 0):
                                 return True
                 else:
                     return True
         return False
-    

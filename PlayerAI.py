@@ -8,6 +8,7 @@ class PlayerAI:
         self.time_limit = time_limit
         self.time_start = time.time()
         self.order = order
+        self.value = {}
     
     def set_time_limit(self, time_limit):
         self.time_limit = time_limit
@@ -20,19 +21,22 @@ class PlayerAI:
             return True
     
     def evaluate(self, grid):
-        weights = [10, 1, 1, 1, -1, 10, 1]
-        matrix = self.get_log_matrix(grid)
-        available_number_of_cells = len(grid.get_available_cells())
-        average_tile_number = sum(sum(row) for row in matrix) / (grid.height*grid.width - available_number_of_cells)
-        tiles = [matrix[i][j] for i in range(grid.height) for j in range(grid.width) if matrix[i][j] != 0]
-        median_tile_number = sorted(tiles)[len(tiles) // 2]
-        return weights[0] * available_number_of_cells + \
-               weights[1] * average_tile_number + \
-               weights[2] * median_tile_number + \
-               weights[3] * math.log(grid.get_max_tile(), 2) + \
-               weights[4] * self.difference_between_adjacent_tiles(matrix) + \
-               weights[5] * self.potential_merging(matrix) + \
-               weights[6] * self.ordering(matrix)
+        grid_tuple = grid.to_tuple()
+        if grid_tuple not in self.value:
+            weights = [10, 1, 1, 1, -1, 10, 1]
+            matrix = self.get_log_matrix(grid)
+            available_number_of_cells = len(grid.get_available_cells())
+            average_tile_number = sum(sum(row) for row in matrix) / (grid.height*grid.width - available_number_of_cells)
+            tiles = [matrix[i][j] for i in range(grid.height) for j in range(grid.width) if matrix[i][j] != 0]
+            median_tile_number = sorted(tiles)[len(tiles) // 2]
+            self.value[grid_tuple] =  weights[0] * available_number_of_cells + \
+                                    weights[1] * average_tile_number + \
+                                    weights[2] * median_tile_number + \
+                                    weights[3] * math.log(grid.get_max_tile(), 2) + \
+                                    weights[4] * self.difference_between_adjacent_tiles(matrix) + \
+                                    weights[5] * self.potential_merging(matrix) + \
+                                    weights[6] * self.ordering(matrix)
+        return self.value[grid_tuple]
     
     def get_log_matrix(self, grid):
         return tuple(tuple(math.log(x, 2) if x != 0 else 0 for x in grid.grid[i]) for i in range(grid.height))

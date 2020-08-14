@@ -17,6 +17,9 @@ class Grid:
     def __str__(self):
         return('\n'.join([''.join(['{:6}'.format(cell) for cell in row]) for row in self.grid]))
 
+    def to_tuple(self):
+        return tuple(tuple(row) for row in self.grid)
+
     def clone(self):
         return Grid(grid=self.grid)
 

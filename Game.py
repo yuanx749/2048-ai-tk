@@ -6,14 +6,19 @@ ACTION = dict(zip(DIRECTIONS, ('Up', 'Down', 'Left', 'Right')))
 
 TILE_SIZE = 100
 BORDER_SIZE = 45
-TILE_COLOR = {0:'#CDC5BF', 2:'#EEE4DA', 4:'#EDE0C8', 8:'#F2B179', 
-              16:'#F59563', 32:'#F67C60', 64:'#F65E3B', 128:'#EDCF72', 
-              256:'#EDCC62', 512:'#EDC851', 1024:'#EDC746', 2048:'#EDC22E', 
-              4096:'#000000', 8192:'#FFFFFF'}
-TEXT_COLOR = {0:'#CDC5BF', 2:'#776E65', 4:'#776E65', 8:'#F9F6F2', 
-              16:'#F9F6F2', 32:'#F9F6F2', 64:'#F9F6F2', 128:'#F9F6F2', 
-              256:'#F9F6F2', 512:'#F9F6F2', 1024:'#F9F6F2', 2048:'#F9F6F2', 
-              4096:'#FFFFFF', 8192:'#000000'}
+TILE_COLOR = {
+    0: '#CDC5BF', 2: '#EEE4DA', 4: '#EDE0C8', 8: '#F2B179',
+    16: '#F59563', 32: '#F67C60', 64: '#F65E3B', 128: '#EDCF72',
+    256: '#EDCC62', 512: '#EDC851', 1024: '#EDC746', 2048: '#EDC22E',
+    4096: '#000000', 8192: '#FFFFFF'
+}
+TEXT_COLOR = {
+    0: '#CDC5BF', 2: '#776E65', 4: '#776E65', 8: '#F9F6F2',
+    16: '#F9F6F2', 32: '#F9F6F2', 64: '#F9F6F2', 128: '#F9F6F2',
+    256: '#F9F6F2', 512: '#F9F6F2', 1024: '#F9F6F2', 2048: '#F9F6F2',
+    4096: '#FFFFFF', 8192: '#000000'
+}
+
 
 class Game:
     def __init__(self):
@@ -24,16 +29,21 @@ class Game:
         self.play_ai = PlayerAI(time_limit=self.time_limit)
         self.over = True
         self.human_mode = False
-        self.directions = dict(zip(('Up', 'Down', 'Left', 'Right'), DIRECTIONS))
+        self.directions = dict(zip(
+            ('Up', 'Down', 'Left', 'Right'), DIRECTIONS))
 
         self.root = tk.Tk()
         self.root.title('2048')
-        self.canvas = tk.Canvas(self.root, 
-                                width=self.width*TILE_SIZE + 2*BORDER_SIZE, 
-                                height=self.height*TILE_SIZE + 2*BORDER_SIZE, 
-                                bg='#A39480')
-        self.frame = tk.Frame(self.root, highlightbackground='black', highlightcolor='black', highlightthickness=1)
-        self.button1 = tk.Button(self.frame, text='New game', command=self.reset)
+        self.canvas = tk.Canvas(
+            self.root,
+            width=self.width*TILE_SIZE + 2*BORDER_SIZE,
+            height=self.height*TILE_SIZE + 2*BORDER_SIZE,
+            bg='#A39480')
+        self.frame = tk.Frame(
+            self.root, highlightbackground='black',
+            highlightcolor='black', highlightthickness=1)
+        self.button1 = tk.Button(
+            self.frame, text='New game', command=self.reset)
         self.label1 = tk.Label(self.frame, text='Rows:')
         self.label2 = tk.Label(self.frame, text='Columns:')
         self.label3 = tk.Label(self.frame, text='Time limit:')
@@ -43,7 +53,8 @@ class Game:
         self.entry2.insert(0, str(self.width))
         self.entry3 = tk.Entry(self.frame)
         self.entry3.insert(0, str(self.time_limit))
-        self.button2 = tk.Button(self.frame, text='Switch to human', command=self.switch_mode)
+        self.button2 = tk.Button(
+            self.frame, text='Switch to human', command=self.switch_mode)
         self.root.bind_all('<KeyPress>', self.human_move)
         self.frame.bind('<Button-1>', lambda e: e.widget.focus_set())
 
@@ -70,8 +81,9 @@ class Game:
         self.play_ai.set_time_limit(self.time_limit)
         self.over = False
 
-        self.canvas.config(width=self.width*TILE_SIZE + 2*BORDER_SIZE, 
-                           height=self.height*TILE_SIZE + 2*BORDER_SIZE)
+        self.canvas.config(
+            width=self.width*TILE_SIZE + 2*BORDER_SIZE,
+            height=self.height*TILE_SIZE + 2*BORDER_SIZE)
 
         for i in range(2):
             self.grid.insert_random_tile()
@@ -82,27 +94,29 @@ class Game:
     def draw(self):
         self.canvas.delete(tk.ALL)
         for row in range(self.height):
-            for col in range(self.width):               
+            for col in range(self.width):
                 tile_value = self.grid.get_tile(row, col)
-                self.canvas.create_rectangle(col*TILE_SIZE + BORDER_SIZE, 
-                                             row*TILE_SIZE + BORDER_SIZE, 
-                                             (col+1)*TILE_SIZE + BORDER_SIZE, 
-                                             (row+1)*TILE_SIZE + BORDER_SIZE, 
-                                             width=TILE_SIZE // 10, 
-                                             outline='#A39480', 
-                                             fill=TILE_COLOR[tile_value])
-                self.canvas.create_text((col+0.5)*TILE_SIZE + BORDER_SIZE,
-                                        (row+0.5)*TILE_SIZE + BORDER_SIZE,
-                                        text=str(tile_value),
-                                        fill=TEXT_COLOR[tile_value],
-                                        font=('Microsoft Sans Serif', -TILE_SIZE // 3, 'bold'))
+                self.canvas.create_rectangle(
+                    col*TILE_SIZE + BORDER_SIZE,
+                    row*TILE_SIZE + BORDER_SIZE,
+                    (col+1)*TILE_SIZE + BORDER_SIZE,
+                    (row+1)*TILE_SIZE + BORDER_SIZE,
+                    width=TILE_SIZE // 10,
+                    outline='#A39480',
+                    fill=TILE_COLOR[tile_value])
+                self.canvas.create_text(
+                    (col+0.5)*TILE_SIZE + BORDER_SIZE,
+                    (row+0.5)*TILE_SIZE + BORDER_SIZE,
+                    text=str(tile_value),
+                    fill=TEXT_COLOR[tile_value],
+                    font=('Microsoft Sans Serif', -TILE_SIZE // 3, 'bold'))
 
     def start_ai(self):
         if not self.human_mode and not self.over:
             grid_copy = self.grid.clone()
             print("Player's turn (AI):")
             move = self.play_ai.get_move(grid_copy)
-            if move != None and move >= 0 and move < 4:
+            if move is not None and move >= 0 and move < 4:
                 if self.grid.can_move([move]):
                     print(ACTION[move])
                     self.grid.move(move)
@@ -134,7 +148,9 @@ class Game:
             self.play_ai.set_time_limit(self.time_limit)
 
     def human_move(self, event):
-        if self.human_mode and not self.over and event.keysym in self.directions:
+        if (self.human_mode
+                and not self.over
+                and event.keysym in self.directions):
             move = self.directions[event.keysym]
             if self.grid.move(move):
                 print("Player's turn:")
@@ -148,6 +164,7 @@ class Game:
                 if not self.grid.can_move():
                     self.over = True
                     print("Game over:", self.grid.get_max_tile(), '\n')
+
 
 if __name__ == '__main__':
     game = Game()

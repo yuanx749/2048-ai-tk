@@ -6,6 +6,11 @@ Tkinter GUI, no additional package required on Windows.
 sudo apt install python3-tk
 python Game.py
 ```
+
+Optimizations:
+- Order nodes to maximize pruning.
+- Memorization.
+
 Some heuristics:
 - available cells
 - potential merging

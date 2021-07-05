@@ -1,8 +1,7 @@
-from Grid import DIRECTIONS, Grid
-from PlayerAI import PlayerAI
 import tkinter as tk
 
-ACTION = dict(zip(DIRECTIONS, ('Up', 'Down', 'Left', 'Right')))
+from Grid import DIRECTIONS, Grid
+from PlayerAI import PlayerAI
 
 TILE_SIZE = 100
 BORDER_SIZE = 45
@@ -31,6 +30,7 @@ class Game:
         self.human_mode = False
         self.directions = dict(zip(
             ('Up', 'Down', 'Left', 'Right'), DIRECTIONS))
+        self.action = dict(zip(DIRECTIONS, ('Up', 'Down', 'Left', 'Right')))
 
         self.root = tk.Tk()
         self.root.title('2048')
@@ -85,7 +85,7 @@ class Game:
             width=self.width*TILE_SIZE + 2*BORDER_SIZE,
             height=self.height*TILE_SIZE + 2*BORDER_SIZE)
 
-        for i in range(2):
+        for _ in range(2):
             self.grid.insert_random_tile()
         print("New game:")
         print(self.grid)
@@ -115,10 +115,10 @@ class Game:
         if not self.human_mode and not self.over:
             grid_copy = self.grid.clone()
             print("Player's turn (AI):")
-            move = self.play_ai.get_move(grid_copy)
-            if move is not None and move >= 0 and move < 4:
+            move = self.play_ai.get_move(grid_copy.state)
+            if move in DIRECTIONS:
                 if self.grid.can_move([move]):
-                    print(ACTION[move])
+                    print(self.action[move])
                     self.grid.move(move)
                 else:
                     print("Invalid player AI move!")
@@ -154,7 +154,7 @@ class Game:
             move = self.directions[event.keysym]
             if self.grid.move(move):
                 print("Player's turn:")
-                print(ACTION[move])
+                print(self.action[move])
                 print(self.grid)
                 self.draw()
                 print("Computer's turn:")

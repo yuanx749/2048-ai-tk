@@ -24,6 +24,10 @@ class Grid:
     def to_tuple(self):
         return tuple(tuple(row) for row in self.grid)
 
+    @property
+    def state(self):
+        return self.to_tuple()
+
     def clone(self):
         return Grid(grid=self.grid)
 
@@ -48,7 +52,8 @@ class Grid:
                 max_tile = max(max_tile, self.grid[row][col])
         return max_tile
 
-    def merge(self, line):
+    @staticmethod
+    def merge(line):
         result = []
         merge_flag = False
         for tile in line:

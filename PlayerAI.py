@@ -1,55 +1,50 @@
-from Grid import DIRECTIONS, Grid
-from heapq import heappush, heappop
-import time
 import math
+from heapq import heappush
+
+from Grid import DIRECTIONS, Grid
+from Minimax import Minimax
 
 
-class PlayerAI:
-    def __init__(self, time_limit=0.1, order=True):
-        self.time_limit = time_limit
-        self.time_start = time.time()
-        self.order = order
-        self.value = {}
+class PlayerAI(Minimax):
+    def __init__(self, time_limit=0.1):
+        super().__init__(time_limit)
+        self.verbose = False
 
-    def set_time_limit(self, time_limit):
-        self.time_limit = time_limit
-
-    def timeout(self):
-        assert time.time() - self.time_start <= self.time_limit
-
-    def terminal_test(self, grid, depth):
+    def terminal_test(self, state, depth):
+        grid = Grid(grid=state)
         if depth == 0 or not grid.can_move():
             return True
 
-    def evaluate(self, grid):
-        grid_tuple = grid.to_tuple()
-        if grid_tuple not in self.value:
-            weights = [10, 1, 1, 1, -1, 10, 1]
-            matrix = self.get_log_matrix(grid)
-            available_number_of_cells = len(grid.get_available_cells())
-            average_tile_number = (
-                sum(sum(row) for row in matrix)
-                / (grid.height*grid.width - available_number_of_cells))
-            tiles = [
-                matrix[i][j] for i in range(grid.height)
-                for j in range(grid.width) if matrix[i][j] != 0]
-            median_tile_number = sorted(tiles)[len(tiles) // 2]
-            self.value[grid_tuple] = (
-                weights[0] * available_number_of_cells
-                + weights[1] * average_tile_number
-                + weights[2] * median_tile_number
-                + weights[3] * math.log(grid.get_max_tile(), 2)
-                + weights[4] * self.diff_between_adj_tiles(matrix)
-                + weights[5] * self.potential_merging(matrix)
-                + weights[6] * self.ordering(matrix))
-        return self.value[grid_tuple]
+    def heuristic(self, state):
+        grid = Grid(grid=state)
+        weights = [10, 1, 1, 1, -1, 10, 1]
+        matrix = self.get_log_matrix(state)
+        available_number_of_cells = len(grid.get_available_cells())
+        average_tile_number = (
+            sum(sum(row) for row in matrix)
+            / (grid.height*grid.width - available_number_of_cells))
+        tiles = [
+            matrix[i][j] for i in range(grid.height)
+            for j in range(grid.width) if matrix[i][j] != 0]
+        median_tile_number = sorted(tiles)[len(tiles) // 2]
+        score = (
+            weights[0] * available_number_of_cells
+            + weights[1] * average_tile_number
+            + weights[2] * median_tile_number
+            + weights[3] * math.log(grid.get_max_tile(), 2)
+            + weights[4] * self.diff_between_adj_tiles(matrix)
+            + weights[5] * self.potential_merging(matrix)
+            + weights[6] * self.ordering(matrix))
+        return score
 
-    def get_log_matrix(self, grid):
+    @staticmethod
+    def get_log_matrix(state):
         return tuple(tuple(
-            math.log(x, 2) if x != 0 else 0 for x in grid.grid[i])
-            for i in range(grid.height))
+            math.log(x, 2) if x != 0 else 0 for x in state[i])
+            for i in range(len(state)))
 
-    def diff_between_adj_tiles(self, matrix):
+    @staticmethod
+    def diff_between_adj_tiles(matrix):
         return (
             sum(sum(abs(matrix[i][j] - matrix[i][j + 1])
                 for j in range(len(matrix[0]) - 1))
@@ -58,7 +53,8 @@ class PlayerAI:
                   for i in range(len(matrix) - 1))
                   for j in range(len(matrix[0]))))
 
-    def potential_merging(self, matrix):
+    @staticmethod
+    def potential_merging(matrix):
         return (
             sum(sum(1 if matrix[i][j] != 0
                 and matrix[i][j] == matrix[i][j + 1]
@@ -69,7 +65,8 @@ class PlayerAI:
                   else 0 for i in range(len(matrix) - 1))
                   for j in range(len(matrix[0]))))
 
-    def ordering(self, matrix):
+    @staticmethod
+    def ordering(matrix):
         score = 0
         for i in range(len(matrix)):
             if (all(matrix[i][j] >= matrix[i][j + 1]
@@ -89,7 +86,8 @@ class PlayerAI:
                 score -= max(matrix[i][j] for i in range(len(matrix)))
         return score
 
-    def children_min(self, grid):
+    def children_min(self, state):
+        grid = Grid(grid=state)
         cells = grid.get_available_cells()
         children = []
         for cell in cells:
@@ -97,87 +95,37 @@ class PlayerAI:
                 child = grid.clone()
                 child.set_tile(cell[0], cell[1], tile_value)
                 if self.order:
-                    heappush(children, (self.evaluate(child), child.grid))
+                    heappush(
+                        children, (self.evaluate(child.state), child.state))
                 else:
-                    children.append(child)
+                    children.append(child.state)
                 self.timeout()
         return children
 
-    def minimize(self, grid, alpha, beta, depth):
-        self.timeout()
-        if self.terminal_test(grid, depth):
-            return None, self.evaluate(grid)
-        min_child, min_utility = None, float('inf')
-        children = self.children_min(grid)
-        while len(children) > 0:
-            if self.order:
-                child_grid = heappop(children)[1]
-                child = Grid(grid=child_grid)
-            else:
-                child = children.pop()
-            _, utility = self.maximize(child, alpha, beta, depth - 1)
-            if utility < min_utility:
-                min_child, min_utility = child, utility
-            if min_utility <= alpha:
-                break
-            if min_utility < beta:
-                beta = min_utility
-        return min_child, min_utility
-
-    def children_max(self, grid):
+    def children_max(self, state):
+        grid = Grid(grid=state)
         children = []
         for direction in DIRECTIONS:
             child = grid.clone()
             if child.move(direction):
                 if self.order:
-                    heappush(children, (-self.evaluate(child), child.grid))
+                    heappush(
+                        children, (-self.evaluate(child.state), child.state))
                 else:
-                    children.append(child)
+                    children.append(child.state)
             self.timeout()
         return children
 
-    def maximize(self, grid, alpha, beta, depth):
-        self.timeout()
-        if self.terminal_test(grid, depth):
-            return None, self.evaluate(grid)
-        max_child, max_utility = None, float('-inf')
-        children = self.children_max(grid)
-        while len(children) > 0:
-            if self.order:
-                child_grid = heappop(children)[1]
-                child = Grid(grid=child_grid)
-            else:
-                child = children.pop()
-            _, utility = self.minimize(child, alpha, beta, depth - 1)
-            if utility > max_utility:
-                max_child, max_utility = child, utility
-            if max_utility >= beta:
-                break
-            if max_utility > alpha:
-                alpha = max_utility
-        return max_child, max_utility
-
-    def get_move(self, grid):
-        self.time_start = time.time()
-        child = None
-        depth = 0
-        while True:
-            try:
-                depth += 1
-                child, _ = self.maximize(
-                    grid, float('-inf'), float('inf'), depth)
-            except AssertionError:
-                break
-        if child is None:
-            return None
+    def get_move_to_child(self, state, child):
         for direction in DIRECTIONS:
-            grid_copy = grid.clone()
-            grid_copy.move(direction)
-            if grid_copy.grid == child.grid:
-                # matrix = self.get_log_matrix(child)
-                # print(
-                #     depth - 1,
-                #     self.diff_between_adj_tiles(matrix),
-                #     self.potential_merging(matrix),
-                #     self.ordering(matrix))
+            grid = Grid(grid=state)
+            grid.move(direction)
+            if grid.state == child:
+                if self.verbose:
+                    matrix = self.get_log_matrix(child)
+                    print(
+                        self.depth - 1,
+                        self.diff_between_adj_tiles(matrix),
+                        self.potential_merging(matrix),
+                        self.ordering(matrix))
                 return direction

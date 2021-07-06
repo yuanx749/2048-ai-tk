@@ -1,19 +1,26 @@
 import time
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from functools import wraps
 from heapq import heappop
+from typing import Any, Callable, List, Tuple, Union
+
+
+@dataclass(order=True)
+class PrioritizedItem:
+    priority: float
+    state: Any = field(compare=False)
 
 
 class Minimax(ABC):
     """
     General minimax algorithm.
-    Node are represented by hashable states.
     """
     def __init__(self, time_limit):
         self.time_limit = time_limit
         self.time_start = time.time()
         self.order = True
         self.cache = True
-        self.value = {}
         self.depth = 0
 
     def set_time_limit(self, time_limit):
@@ -30,38 +37,60 @@ class Minimax(ABC):
         pass
 
     @abstractmethod
-    def heuristic(self, state):
+    def hashkey(self, state):
         pass
 
+    def memoize(func: Callable):
+        func.cache = {}
+
+        @wraps(func)
+        def wrapper(self, state):
+            if self.cache:
+                key = self.hashkey(state)
+                if key not in func.cache:
+                    func.cache[key] = func(self, state)
+                value = func.cache[key]
+            else:
+                value = func(self, state)
+            return value
+        return wrapper
+
+    @abstractmethod
+    def _evaluate(self, state):
+        pass
+
+    @memoize
     def evaluate(self, state):
         """
         Returns the evaluation score.
         """
-        if self.cache:
-            if state not in self.value:
-                self.value[state] = self.heuristic(state)
-            score = self.value[state]
-        else:
-            score = self.heuristic(state)
-        return score
+        return self._evaluate(state)
 
     @abstractmethod
-    def children_min(self, state):
-        """
-        Returns the list or heap of children nodes of min node.
-        """
+    def _children_min(self, state):
         pass
+
+    @memoize
+    def children_min(self, state) -> Union[tuple, Tuple[PrioritizedItem, ...]]:
+        """
+        Returns the tuple or heap of children nodes of min node.
+        """
+        return self._children_min(state)
 
     @abstractmethod
-    def children_max(self, state):
-        """
-        Returns the list or heap of children nodes of max node.
-        """
+    def _children_max(self, state):
         pass
 
-    def pop_children(self, children):
+    @memoize
+    def children_max(self, state) -> Union[tuple, Tuple[PrioritizedItem, ...]]:
+        """
+        Returns the tuple or heap of children nodes of max node.
+        """
+        return self._children_max(state)
+
+    def pop_children(self, children: Union[list, List[PrioritizedItem]]):
         if self.order:
-            state = heappop(children)[1]
+            state = heappop(children).state
         else:
             state = children.pop()
         return state
@@ -71,7 +100,7 @@ class Minimax(ABC):
         if self.terminal_test(state, depth):
             return None, self.evaluate(state)
         min_child, min_utility = None, float('inf')
-        children = self.children_min(state)
+        children = list(self.children_min(state))
         while len(children) > 0:
             child = self.pop_children(children)
             _, utility = self.maximize(child, alpha, beta, depth - 1)
@@ -88,7 +117,7 @@ class Minimax(ABC):
         if self.terminal_test(state, depth):
             return None, self.evaluate(state)
         max_child, max_utility = None, float('-inf')
-        children = self.children_max(state)
+        children = list(self.children_max(state))
         while len(children) > 0:
             child = self.pop_children(children)
             _, utility = self.minimize(child, alpha, beta, depth - 1)
@@ -114,6 +143,10 @@ class Minimax(ABC):
         self.time_start = time.time()
         child = None
         depth = 0
+        if self.cache:
+            self.evaluate.cache.clear()
+            self.children_min.cache.clear()
+            self.children_max.cache.clear()
         while True:
             try:
                 depth += 1

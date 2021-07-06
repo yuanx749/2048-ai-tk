@@ -4,12 +4,12 @@ Minimax with alpha–beta pruning and iterative deepening, ~90% win rate.
 Tkinter GUI, no additional package required on Windows.
 ```
 sudo apt install python3-tk
-python Game.py
+python game.py
 ```
 
 Optimizations:
 - Order nodes to maximize pruning.
-- Memorization.
+- Memorization in iterative deepening.
 
 Some heuristics:
 - available cells

@@ -1,24 +1,28 @@
 import math
 from heapq import heappush
 
-from Grid import DIRECTIONS, Grid
-from Minimax import Minimax
+from grid import DIRECTIONS, Grid
+from minimax import Minimax, PrioritizedItem
 
 
 class PlayerAI(Minimax):
+    """
+    Minimax for 2048.
+    """
     def __init__(self, time_limit=0.1):
         super().__init__(time_limit)
         self.verbose = False
 
-    def terminal_test(self, state, depth):
-        grid = Grid(grid=state)
+    def terminal_test(self, grid: Grid, depth):
         if depth == 0 or not grid.can_move():
             return True
 
-    def heuristic(self, state):
-        grid = Grid(grid=state)
+    def hashkey(self, grid: Grid):
+        return tuple(tuple(row) for row in grid.grid)
+
+    def _evaluate(self, grid: Grid):
         weights = [10, 1, 1, 1, -1, 10, 1]
-        matrix = self.get_log_matrix(state)
+        matrix = self.get_log_matrix(grid.grid)
         available_number_of_cells = len(grid.get_available_cells())
         average_tile_number = (
             sum(sum(row) for row in matrix)
@@ -38,10 +42,10 @@ class PlayerAI(Minimax):
         return score
 
     @staticmethod
-    def get_log_matrix(state):
+    def get_log_matrix(matrix):
         return tuple(tuple(
-            math.log(x, 2) if x != 0 else 0 for x in state[i])
-            for i in range(len(state)))
+            math.log(x, 2) if x != 0 else 0 for x in matrix[i])
+            for i in range(len(matrix)))
 
     @staticmethod
     def diff_between_adj_tiles(matrix):
@@ -86,8 +90,7 @@ class PlayerAI(Minimax):
                 score -= max(matrix[i][j] for i in range(len(matrix)))
         return score
 
-    def children_min(self, state):
-        grid = Grid(grid=state)
+    def _children_min(self, grid: Grid):
         cells = grid.get_available_cells()
         children = []
         for cell in cells:
@@ -96,33 +99,36 @@ class PlayerAI(Minimax):
                 child.set_tile(cell[0], cell[1], tile_value)
                 if self.order:
                     heappush(
-                        children, (self.evaluate(child.state), child.state))
+                        children,
+                        PrioritizedItem(
+                            self.evaluate(child), child))
                 else:
-                    children.append(child.state)
+                    children.append(child)
                 self.timeout()
-        return children
+        return tuple(children)
 
-    def children_max(self, state):
-        grid = Grid(grid=state)
+    def _children_max(self, grid: Grid):
         children = []
         for direction in DIRECTIONS:
             child = grid.clone()
             if child.move(direction):
                 if self.order:
                     heappush(
-                        children, (-self.evaluate(child.state), child.state))
+                        children,
+                        PrioritizedItem(
+                            -self.evaluate(child), child))
                 else:
-                    children.append(child.state)
+                    children.append(child)
             self.timeout()
-        return children
+        return tuple(children)
 
-    def get_move_to_child(self, state, child):
+    def get_move_to_child(self, grid: Grid, child: Grid):
         for direction in DIRECTIONS:
-            grid = Grid(grid=state)
-            grid.move(direction)
-            if grid.state == child:
+            grid_copy = grid.clone()
+            grid_copy.move(direction)
+            if grid_copy.grid == child.grid:
                 if self.verbose:
-                    matrix = self.get_log_matrix(child)
+                    matrix = self.get_log_matrix(child.grid)
                     print(
                         self.depth - 1,
                         self.diff_between_adj_tiles(matrix),

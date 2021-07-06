@@ -1,7 +1,7 @@
 import tkinter as tk
 
-from Grid import DIRECTIONS, Grid
-from PlayerAI import PlayerAI
+from grid import DIRECTIONS, Grid
+from player_ai import PlayerAI
 
 TILE_SIZE = 100
 BORDER_SIZE = 45
@@ -115,7 +115,7 @@ class Game:
         if not self.human_mode and not self.over:
             grid_copy = self.grid.clone()
             print("Player's turn (AI):")
-            move = self.play_ai.get_move(grid_copy.state)
+            move = self.play_ai.get_move(grid_copy)
             if move in DIRECTIONS:
                 if self.grid.can_move([move]):
                     print(self.action[move])

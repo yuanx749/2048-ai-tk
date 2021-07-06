@@ -1,6 +1,6 @@
 import pytest
 
-from Grid import Grid
+from grid import Grid
 
 
 @pytest.mark.parametrize(

@@ -21,13 +21,6 @@ class Grid:
         return('\n'.join(
             [''.join([f'{cell:6}' for cell in row]) for row in self.grid]))
 
-    def to_tuple(self):
-        return tuple(tuple(row) for row in self.grid)
-
-    @property
-    def state(self):
-        return self.to_tuple()
-
     def clone(self):
         return Grid(grid=self.grid)
 

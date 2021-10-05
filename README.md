@@ -17,5 +17,11 @@ Some heuristics:
 - average, median, max tile
 - difference between adjacent tiles
 - score and penalty of ordering across rows, columns
+
+Modules:
+- `grid.py`: Contains class that represents the 2048 board.
+- `game.py`: Driver that runs the game in GUI.
+- `minimax.py`: Minimax implementation, reusable in other games.
+- `player_ai.py`: Minimax for 2048.
 ---
 ![2048](4096.png)

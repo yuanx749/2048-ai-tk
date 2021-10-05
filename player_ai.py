@@ -6,9 +6,7 @@ from minimax import Minimax, PrioritizedItem
 
 
 class PlayerAI(Minimax):
-    """
-    Minimax for 2048.
-    """
+    """Minimax for 2048."""
     def __init__(self, time_limit=0.1):
         super().__init__(time_limit)
         self.verbose = False

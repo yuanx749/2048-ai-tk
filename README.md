@@ -23,5 +23,6 @@ Modules:
 - `game.py`: Driver that runs the game in GUI.
 - `minimax.py`: Minimax implementation, reusable in other games.
 - `player_ai.py`: Minimax for 2048.
+
 ---
 ![2048](4096.png)

@@ -1,3 +1,5 @@
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/yuanx749/2048-ai-tk.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/yuanx749/2048-ai-tk/context:python)
+
 # 2048-ai-tk
 Minimax with alpha–beta pruning and iterative deepening, ~90% win rate.
 

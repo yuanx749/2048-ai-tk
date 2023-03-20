@@ -11,14 +11,14 @@ class PlayerAI(Minimax):
         super().__init__(time_limit)
         self.verbose = False
 
-    def terminal_test(self, grid: Grid, depth):
-        if depth == 0 or not grid.can_move():
-            return True
+    def terminal_test(self, state: Grid, depth):
+        return depth == 0 or not state.can_move()
 
-    def hashkey(self, grid: Grid):
-        return tuple(tuple(row) for row in grid.grid)
+    def hashkey(self, state: Grid):
+        return tuple(tuple(row) for row in state.grid)
 
-    def _evaluate(self, grid: Grid):
+    def _evaluate(self, state: Grid):
+        grid = state
         weights = [10, 1, 1, 1, -1, 10, 1]
         matrix = self.get_log_matrix(grid.grid)
         available_number_of_cells = len(grid.get_available_cells())
@@ -70,6 +70,7 @@ class PlayerAI(Minimax):
     @staticmethod
     def ordering(matrix):
         score = 0
+        # pylint: disable=consider-using-enumerate
         for i in range(len(matrix)):
             if (all(matrix[i][j] >= matrix[i][j + 1]
                     for j in range(len(matrix[i]) - 1)) or
@@ -88,7 +89,8 @@ class PlayerAI(Minimax):
                 score -= max(matrix[i][j] for i in range(len(matrix)))
         return score
 
-    def _children_min(self, grid: Grid):
+    def _children_min(self, state: Grid):
+        grid = state
         cells = grid.get_available_cells()
         children = []
         for cell in cells:
@@ -105,7 +107,8 @@ class PlayerAI(Minimax):
                 self.timeout()
         return tuple(children)
 
-    def _children_max(self, grid: Grid):
+    def _children_max(self, state: Grid):
+        grid = state
         children = []
         for direction in DIRECTIONS:
             child = grid.clone()
@@ -120,7 +123,8 @@ class PlayerAI(Minimax):
             self.timeout()
         return tuple(children)
 
-    def get_move_to_child(self, grid: Grid, child: Grid):
+    def get_move_to_child(self, state: Grid, child: Grid):
+        grid = state
         for direction in DIRECTIONS:
             grid_copy = grid.clone()
             grid_copy.move(direction)
@@ -133,3 +137,4 @@ class PlayerAI(Minimax):
                         self.potential_merging(matrix),
                         self.ordering(matrix))
                 return direction
+        return None

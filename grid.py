@@ -18,7 +18,7 @@ class Grid:
                 for row in range(self.height)]
 
     def __str__(self):
-        return('\n'.join(
+        return ('\n'.join(
             [''.join([f'{cell:6}' for cell in row]) for row in self.grid]))
 
     def clone(self):
@@ -51,7 +51,7 @@ class Grid:
         merge_flag = False
         for tile in line:
             if tile != 0:
-                if result == [] or merge_flag or tile != result[-1]:
+                if not result or merge_flag or tile != result[-1]:
                     result.append(tile)
                     merge_flag = False
                 else:
@@ -93,7 +93,7 @@ class Grid:
         else:
             tile_value = 4
         cells = self.get_available_cells()
-        if cells != []:
+        if cells:
             row, col = random.choice(cells)
             self.set_tile(row, col, tile_value)
 
@@ -104,14 +104,13 @@ class Grid:
         for row in range(self.height):
             for col in range(self.width):
                 if self.grid[row][col] != 0:
-                    for d in dirs:
-                        row_adj = row + OFFSETS[d][0]
-                        col_adj = col + OFFSETS[d][1]
-                        if not self.cross_bound(row_adj, col_adj):
-                            adj_cell_value = self.grid[row_adj][col_adj]
-                            if (adj_cell_value == self.grid[row][col]
-                                    or adj_cell_value == 0):
-                                return True
+                    for dir_ in dirs:
+                        row_adj = row + OFFSETS[dir_][0]
+                        col_adj = col + OFFSETS[dir_][1]
+                        if (not self.cross_bound(row_adj, col_adj) and
+                                self.grid[row_adj][col_adj]
+                                in (self.grid[row][col], 0)):
+                            return True
                 else:
                     return True
         return False

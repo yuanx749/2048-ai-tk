@@ -39,13 +39,12 @@ class Minimax(ABC):
     @abstractmethod
     def terminal_test(self, state, depth):
         """Terminates if depth is zero or a terminal node is reached."""
-        pass
 
     @abstractmethod
     def hashkey(self, state):
         """Returns a hasable key of the state to be used in function cache."""
-        pass
 
+    # pylint: disable=no-self-argument
     def memoize(func: Callable):
         """Returns a decorator that stores the value `func` returns regarding
         its parameter `state`.
@@ -54,6 +53,7 @@ class Minimax(ABC):
 
         @wraps(func)
         def wrapper(self, state):
+            # pylint: disable=not-callable
             if self.cache:
                 key = self.hashkey(state)
                 if key not in func.cache:
@@ -148,7 +148,6 @@ class Minimax(ABC):
     @abstractmethod
     def get_move_to_child(self, state, child):
         """Returns the move from state to child state."""
-        pass
 
     def get_move(self, state):
         """Returns the best move or None by iterative deepening."""
@@ -156,6 +155,7 @@ class Minimax(ABC):
         child = None
         depth = 0
         if self.cache:
+            # pylint: disable=no-member
             self.evaluate.cache.clear()
             self.children_min.cache.clear()
             self.children_max.cache.clear()

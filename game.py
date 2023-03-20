@@ -20,6 +20,7 @@ TEXT_COLOR = {
 
 
 class Game:
+    # pylint: disable=too-many-instance-attributes
     def __init__(self):
         self.height = 4
         self.width = 4
